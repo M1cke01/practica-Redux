@@ -11,6 +11,9 @@ const initialState= {
 export const fetchSongs = createAsyncThunk(
     "search/fetchSongs",
     async (query, { rejectWithValue }) => {
+
+        console.log ("fetchsongs fue llamado:", query);
+        
         try {
             console.log("iniciando la app");
             const token = "Tu spoty";

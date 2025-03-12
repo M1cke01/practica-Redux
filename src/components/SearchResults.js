@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addSong } from "../Redux/LibraryActions";
+import { fetchSongs } from "../Redux/slices/searchSlice";
+import { addSong } from "../Redux/slices/librarySlice";
 
 const SearchResults = ({ songs = [] }) => {
     const dispatch = useDispatch();
     const librarySongs = useSelector((state) => state.library.songs);
+    const { results, loading, error } = useSelector((state) => state.search);
     const [songToAdd, setSongToAdd] = useState(null);
+
+    useEffect(() => {
+        if (songs.length > 0) {
+            console.log("Cargando canciones...", songs);
+            dispatch(fetchSongs(songs));
+        }
+    }, [songs, dispatch]);
 
     const handleAddSong = (song) => {
         const isSongInLibrary = librarySongs.some((librarySong) => librarySong.id === song.id);
@@ -22,29 +31,17 @@ const SearchResults = ({ songs = [] }) => {
         setSongToAdd(song); // Establecer la canción para confirmar antes de agregar
     };
 
-    const songsToAdd = [
-        { id: 1, title: "Teka", artist: "Peso Pluma", album: "Unknow"},
-        { id: 2, title: "Not Afraid", artist: "Eminem", album: "Unknow"},
-        { id: 3, title: "Hollywood", artist: "Peso Pluma", album: "Unknow"},
-        { id: 4, title: "Gervonta", artist: "Peso Pluma", album: "Unknow"},
-        { id: 5, title: "Mision 0", artist: "C-Kan", album: "Unknow"},
-        { id: 6, title: "VNDO", artist: "Dharius", album: "Unknow"},
-        { id: 7, title: "Aclarando muchas cosas", artist: "Codidiciado", album: "Unknow"},
-        { id: 8, title: "Vato sencillo", artist: "Cartel de Santa", album: "Unknow"},
-        { id: 9, title: "Barcelona", artist: "Alan Walker", album: "Unknow"},
-        { id: 10, title: "Mision 1", artist: "C-Kan", album: "Unknow"},
-    ];
-
     const handleAddMultipleSongs = () => {
         let index = 0;
+        const songsArray = songs;
 
         const showNextSong = () => {
-            setSongToAdd(songsToAdd[index]);
+            setSongToAdd(songsArray[index]);
 
             // Incrementamos el índice y lo reiniciamos si llega al final
-            index = (index + 1) % songsToAdd.length;
+            index = (index + 1) % songsArray.length;
 
-            // Llamamos a la siguiente canción después de 1 segundo
+            // Llamamos a la siguiente canción después de tantos segundo
             setTimeout(showNextSong, 3500);
         };
 
@@ -55,8 +52,10 @@ const SearchResults = ({ songs = [] }) => {
     return (
         <div>
             <h2>Resultados de búsqueda</h2>
-            {songs.length === 0 ? (
-                <p></p>
+            {loading && <p>Cargango canciones...</p>}
+            {error && <p>Error: {error}</p>}
+            {results.length === 0 && !loading ? (
+                <p>No se encontraron canciones</p>
             ) : (
                 <ul>
                     {songs.map((song) => (
